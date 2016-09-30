@@ -6,11 +6,12 @@ bot = telegram.Bot('TOKEN')
 
 def main():
 
-	la_stampa_rss = newspaper.build(u'http://www.lastampa.it/rss.xml')
+	flipboard = newspaper.build(u'https://flipboard.com/@flipboarditalia/edizione-del-giorno-ts3tf1gpz', memoize_articles=False)
 	i = 0
-	for article in la_stampa_rss.articles:
-		
-		article = la_stampa_rss.articles[i]
+	for article in flipboard.articles:
+		if i == 10:
+			break
+		article = flipboard.articles[i]
 		article.download()
 		article.parse()
 		message = article.title + '\n\n' + article.url + '\n'
