@@ -1,19 +1,15 @@
 #!/usr/bin/env python
 import newspaper
 import telegram
+from kyotocabinet import *
 
 bot = telegram.Bot('TOKEN')
-users = []
+db = DB()
+db.open("users.kch", DB.OREADER)
 
 def main():
 
 	flipboard = newspaper.build(u'https://flipboard.com/@flipboarditalia/edizione-del-giorno-ts3tf1gpz', memoize_articles=False)
-	
-	with open('database.db', 'r') as database:
-		for chat_id in database:
-			users.append(chat_id)
-	
-	
 	i = 0
 	for article in flipboard.articles:
 		if i == 10:
@@ -22,11 +18,16 @@ def main():
 		article.download()
 		article.parse()
 		message = article.title + '\n\n' + article.url + '\n'
-		
-		for chat_id in users:
-			bot.sendMessage(chat_id, message)
-		i += 1
 
+		cur = db.cursor()
+		cur.jump()
+		while True:
+                    rec = cur.get(True)
+                    if not rec: break
+                    bot.sendMessage(rec[0].decode(encoding="utf-8", errors="strict"), message)
+                    cur.disable()
+		i += 1
+		db.close()
 
 
 if __name__ == '__main__':
